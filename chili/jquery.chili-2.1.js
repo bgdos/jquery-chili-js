@@ -14,12 +14,14 @@ WEBSITE: http://noteslog.com/chili/
 
 ChiliBook = { //implied global
 
-	  version:            "2.0" // 2008-05-12
+	  version:            "2.1" // 2008-06-29
 
 // options --------------------------------------------------------------------
 
 	, automatic:          true
 	, automaticSelector:  "code"
+
+	, lineNumbers:        !true
 
 	, codeLanguage:       function( el ) {
 		var recipeName = $( el ).attr( "class" );
@@ -29,22 +31,24 @@ ChiliBook = { //implied global
 	, recipeLoading:      true
 	, recipeFolder:       "" // used like: recipeFolder + recipeName + '.js'
 
-	, replaceSpace:       "&#160;"                   // use an empty string for not replacing
-	, replaceTab:         "&#160;&#160;&#160;&#160;" // use an empty string for not replacing
-	, replaceNewLine:     "&#160;<br/>"              // use an empty string for not replacing
+	// IE and FF convert &#160; to "&nbsp;", Safari and Opera do not
+	, replaceSpace:       "&#160;"
+	, replaceTab:         "&#160;&#160;&#160;&#160;"
+	, replaceNewLine:     "&#160;<br/>"
+
+	, selectionStyle:     [ "position:absolute; z-index:3000; overflow:scroll;"
+						  , "width:16em;"
+						  , "height:9em;"
+						  , "border:1px solid gray;"
+						  , "padding:15px;"
+						  , "background-color:yellow;"
+						  ].join( ' ' )
 
 // ------------------------------------------------------------- end of options
 
-	, data:               {}                           // use this for your data
-
 	, defaultReplacement: '<span class="$0">$$</span>' // TODO: make this an option again
 	, recipes:            {} //repository
-	, queue:              {} //register
-
-	//fix for IE: copy of PREformatted text strips off all html, losing newlines
-	, preFixCopy:         document.selection && document.selection.createRange
-	, preContent:         ""
-	, preElement:         null
+	, queue:              {} //registry
 
 	, unique:             function() {
 		return (new Date()).valueOf();
@@ -347,7 +351,7 @@ $.fn.chili = function( options ) {
 
 	} // cook
 
-	function load_stylesheet_inline( sourceCode ) { 
+	function loadStylesheetInline( sourceCode ) { 
 		if( document.createElement ) { 
 			var e = document.createElement( "style" ); 
 			e.type = "text/css"; 
@@ -360,7 +364,7 @@ $.fn.chili = function( options ) {
 			} 
 			document.getElementsByTagName( "head" )[0].appendChild( e ); 
 		} 
-	} // load_stylesheet_inline
+	} // loadStylesheetInline
 			
 	function checkSpices( recipe ) {
 		var name = recipe._name;
@@ -386,7 +390,7 @@ $.fn.chili = function( options ) {
 			}
 			content = content.join('\n');
 
-			load_stylesheet_inline( content );
+			loadStylesheetInline( content );
 
 			book.queue[ name ] = true;
 		}
@@ -438,8 +442,17 @@ $.fn.chili = function( options ) {
 		if( ! ingredients ) {
 			return;
 		}
-		// hack for IE: \r is used instead of \n
+
+		//fix for msie: \r (13) is used instead of \n (10)
+		//fix for opera: \r\n is used instead of \n
 		ingredients = ingredients.replace(/\r\n?/g, "\n");
+
+		//reverse fix for safari: msie, mozilla and opera render the initial \n
+		if( $el.parent().is('pre') ) {
+			if( ! $.browser.safari ) {
+				ingredients = ingredients.replace(/^\n/g, "");
+			}
+		}
 
 		var dish = cook( ingredients, recipe ); // all happens here
 	
@@ -451,28 +464,194 @@ $.fn.chili = function( options ) {
 		}
 
 		el.innerHTML = dish; //much faster than $el.html( dish );
+		//tried also the function replaceHtml from http://blog.stevenlevithan.com/archives/faster-than-innerhtml
+		//but it was not faster nor without sideffects (it was not possible to count spans into el)
 
-		if( ChiliBook.preFixCopy ) {
-			$el
-			.parents()
-			.filter( "pre" )
-			.bind( "mousedown", function() {
-				ChiliBook.preElement = this;
-			} )
-			.bind( "mouseup", function() {
-				if( ChiliBook.preElement == this ) {
-					ChiliBook.preContent = document.selection.createRange().htmlText;
-				}
-			} )
-			;
+		//opera and safari select PRE text correctly 
+		if( ! $.browser.msie || $.browser.mozilla ) {
+			enableSelectionHelper( el );
 		}
+
+		if( book.lineNumbers ) {
+			addLineNumbers( el );
+		}
+
 	} // makeDish
+
+	function enableSelectionHelper( el ) {
+		var element = null;
+		$( el )
+		.parents()
+		.filter( "pre" )
+		.bind( "mousedown", function() {
+			element = this;
+			if( $.browser.msie ) {
+				document.selection.empty();
+			}
+			else {
+				window.getSelection().removeAllRanges();
+			}
+		} )
+		.bind( "mouseup", function( event ) {
+			if( element && (element == this) ) {
+				element = null;
+				var selected = '';
+				if( $.browser.msie ) {
+					selected = document.selection.createRange().htmlText;
+					if( '' == selected ) { 
+						return;
+					}
+					selected = preserveNewLines( selected );
+					var container_tag = '<textarea style="STYLE">';
+				}
+				else {
+					selected = window.getSelection().toString(); //opera doesn't select new lines
+					if( '' == selected ) {
+						return;
+					}
+					selected = selected
+						.replace( /\r/g, '' )
+						.replace( /^# ?/g, '' )
+						.replace( /\n# ?/g, '\n' )
+					;
+					var container_tag = '<pre style="STYLE">';
+				}
+				var $container = $( container_tag.replace( /\bSTYLE\b/, ChiliBook.selectionStyle ) )
+					.appendTo( 'body' )
+					.text( selected )
+					.attr( 'id', 'chili_selection' )
+					.click( function() { $(this).remove(); } )
+				;
+				var top  = event.pageY - Math.round( $container.height() / 2 ) + "px";
+				var left = event.pageX - Math.round( $container.width() / 2 ) + "px";
+				$container.css( { top: top, left: left } );
+				if( $.browser.msie ) {
+//					window.clipboardData.setData( 'Text', selected ); //I couldn't find anything similar for Mozilla
+					$container[0].focus();
+					$container[0].select();
+				}
+				else {
+					var s = window.getSelection();
+					s.removeAllRanges();
+					var r = document.createRange();
+					r.selectNodeContents( $container[0] );
+					s.addRange( r );
+				}
+			}
+		} )
+		;
+	} // enableSelectionHelper
 
 	function getPath( recipeName ) {
 		return book.recipeFolder + recipeName + ".js";
 	} // getPath
 
+	function getSelectedText() {
+		var text = '';
+		if( $.browser.msie ) {
+			text = document.selection.createRange().htmlText;
+		}
+		else {
+			text = window.getSelection().toString();
+		}
+		return text;
+	} // getSelectedText
 
+	function preserveNewLines( html ) {
+		do { 
+			var newline_flag = ChiliBook.unique();
+		}
+		while( html.indexOf( newline_flag ) > -1 );
+		var text = '';
+		if (/<br/i.test(html) || /<li/i.test(html)) {
+			if (/<br/i.test(html)) {
+				html = html.replace( /\<br[^>]*?\>/ig, newline_flag );
+			}
+			else if (/<li/i.test(html)) {
+				html = html.replace( /<ol[^>]*?>|<\/ol>|<li[^>]*?>/ig, '' ).replace( /<\/li>/ig, newline_flag );
+			}
+			var el = $( '<pre>' ).appendTo( 'body' ).hide()[0];
+			el.innerHTML = html;
+			text = $( el ).text().replace( new RegExp( newline_flag, "g" ), '\r\n' );
+			$( el ).remove();
+		}
+		return text;
+	} // preserveNewLines
+
+	function addLineNumbers( el ) {
+
+		function makeListItem1( not_last_line, not_last, last, open ) {
+			var close = open ? '</span>' : '';
+			var aux = '';
+			if( not_last_line ) {
+				aux = '<li>' + open + not_last + close + '</li>';
+			}
+			else if( last ) {
+				aux = '<li>' + open + last + close + '</li>';
+			}
+			return aux;
+		} // makeListItem1
+
+		function makeListItem2( not_last_line, not_last, last, prev_li ) {
+			var aux = '';
+			if( prev_li ) {
+				aux = prev_li;
+			}
+			else {
+				aux = makeListItem1( not_last_line, not_last, last, '' )
+			}
+			return aux;
+		} // makeListItem2
+
+		var html = $( el ).html();
+		var br = /<br>/.test(html) ? '<br>' : '<BR>';
+		var empty_line = '<li>' + book.replaceSpace + '</li>';
+		var list_items = html
+			//extract newlines at the beginning of a span
+			.replace( /(<span [^>]+>)((?:(?:&nbsp;|\xA0)<br>)+)(.*?)(<\/span>)/ig, '$2$1$3$4' ) // I don't know why <span .*?> does not work here
+			//transform newlines inside of a span
+			.replace( /(.*?)(<span .*?>)(.*?)(?:<\/span>(?:&nbsp;|\xA0)<br>|<\/span>)/ig,       // but here it does
+				function( all, before, open, content ) {
+					if (/<br>/i.test(content)) {
+						var pieces = before.split( br );
+						var lastPiece = pieces.pop();
+						before = pieces.join( br );
+						var aux = (before ? before + br : '') //+ replace1( lastPiece + content, open );
+							+ (lastPiece + content).replace( /((.*?)(?:&nbsp;|\xA0)<br>)|(.*)/ig, 
+							function( tmp, not_last_line, not_last, last ) {
+								var aux2 = makeListItem1( not_last_line, not_last, last, open );
+								return aux2;
+							} 
+						);
+						return aux;
+					}
+					else {
+						return all;
+					}
+				} 
+			)
+			//transform newlines outside of a span
+			.replace( /(<li>.*?<\/li>)|((.*?)(?:&nbsp;|\xA0)<br>)|(.+)/ig, 
+				function( tmp, prev_li, not_last_line, not_last, last ) {
+					var aux2 = makeListItem2( not_last_line, not_last, last, prev_li );
+					return aux2;
+				} 
+			)
+			//fix empty lines for Opera
+			.replace( /<li><\/li>/ig, empty_line )
+		;
+
+		el.innerHTML = '<ol>' + list_items + '</ol>';
+	} // addLineNumbers
+
+	function revealChars( tmp ) {
+		return $
+			.map( tmp.split(''), 
+				function(n, i) { 
+					return ' ' + n + ' ' + n.charCodeAt( 0 ) + ' ';
+				} )
+			.join(' ');
+	} // revealChars
 
 //-----------------------------------------------------------------------------
 // the coloring starts here
@@ -495,38 +674,6 @@ $( function() {
 
 	if( ChiliBook.automatic ) {
 		$( ChiliBook.automaticSelector ).chili();
-	}
-
-	if( ChiliBook.preFixCopy ) {
-		function preformatted( text ) {
-			if( '' == text ) { 
-				return ""; 
-			}
-			do { 
-				var newline_flag = ChiliBook.unique();
-			}
-			while( text.indexOf( newline_flag ) > -1 );
-			text = text.replace( /\<br[^>]*?\>/ig, newline_flag );
-			var el = document.createElement( '<pre>' );
-			el.innerHTML = text;
-			text = el.innerText.replace( new RegExp( newline_flag, "g" ), '\r\n' );
-			return text;
-		}
-
-		$( "body" )
-		.bind( "copy", function() {
-			if( '' != ChiliBook.preContent ) {
-				window.clipboardData.setData( 'Text', preformatted( ChiliBook.preContent ) );
-				event.returnValue = false;
-			}
-		} )
-		.bind( "mousedown", function() {
-			ChiliBook.preContent = "";
-		} )
-		.bind( "mouseup", function() {
-			ChiliBook.preElement = null;
-		} )
-		;
 	}
 
 } );
