@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3c.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="keywords" content="syntax, highlighting, code, pre, languages, programming, coloring" />
+<meta name="description" content="examples about Chili, the jQuery code highlighter" />
+
+<title> Chili Examples (version 2.1) </title>
+
+<script type="text/javascript">
+/*
+===============================================================================
+Chili is the jQuery code highlighter plugin
+...............................................................................
+                                               Copyright 2007 / Andrea Ercolino
+-------------------------------------------------------------------------------
+LICENSE: http://www.opensource.org/licenses/mit-license.php
+WEBSITE: http://noteslog.com/chili/
+===============================================================================
+*/
+</script>
+
+<script type="text/javascript" src="http://jquery.com/src/jquery-latest.pack.js"></script>
+<script type="text/javascript" src="chili/jquery.chili-2.1a.js"></script>
+<script type="text/javascript">
+	ChiliBook.recipeFolder = "chili/"; 
+</script>
+</head>
+
+<body>
+<script type="text/javascript"><!--
+google_ad_client = "pub-5209290262083258";
+google_ad_width = 468;
+google_ad_height = 60;
+google_ad_format = "468x60_as";
+google_ad_type = "text_image";
+//2006-12-05: home
+google_ad_channel = "8855023403";
+google_color_border = "EAEAEA";
+google_color_bg = "FFFFFF";
+google_color_link = "D8220C";
+google_color_text = "262626";
+google_color_url = "0066CC";
+//--></script>
+<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
+
+<p>See also the <a href="http://noteslog.com/chili/" target="_blank">Chili Central</a></p>
+
+<h3 style="margin-top:60px;">How to install Chili in 3 easy steps</h3>
+
+
+
+<table border="0" cellpadding="10">
+
+	<tr>
+		<td valign="top" width="100" nowrap="nowrap">
+step 1:
+		</td>
+		<td valign="top">
+<span style="font-variant: small-caps;"><b>Site</b></span>: install Chili at your web server
+<p style="font-size:small">Download and extract Chili's zip file SOMEWHERE into your site</p>
+		</td>
+	<tr>
+
+	<tr>
+		<td valign="top" nowrap="nowrap">
+step 2:
+		</td>
+		<td valign="top">
+<span style="font-variant: small-caps;"><b>Page</b></span>: setup Chili into your page
+<p style="font-size:small">Add the following lines to the HEAD element of your page:</p>
+<pre style="margin-left:40px;margin-top:-5px;"><code class="html">
+&lt;script type=&quot;text/javascript&quot; src=&quot;SOMEWHERE_ELSE/jquery.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javaScript&quot; src=&quot;SOMEWHERE/jquery.chili-2.1.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+	ChiliBook.recipeFolder = &quot;SOMEWHERE/&quot;; 
+&lt;/script&gt; 
+</code></pre>
+		</td>
+	<tr>
+
+	<tr>
+		<td valign="top" nowrap="nowrap">
+step 3:
+		</td>
+		<td valign="top">
+<span style="font-variant: small-caps;"><b>Code</b></span>: mark your snippets for Chili
+<p style="font-size:small">Put your snippets inside CODE elements with a class like the language. For example, the above snippet was introduced in this page like this:</p>
+<pre style="margin-left:40px;margin-top:-5px;"><code class="html">
+&lt;code class="html"&gt;</code>
+&amp;lt;script type=&amp;quot;text/javascript&amp;quot; src=&amp;quot;SOMEWHERE_ELSE/jquery.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&amp;quot;text/javaScript&amp;quot; src=&amp;quot;SOMEWHERE/jquery.chili-2.1.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&amp;quot;text/javascript&amp;quot;&amp;gt;
+	ChiliBook.recipeFolder     = &amp;quot;SOMEWHERE/&amp;quot;; 
+&amp;lt;/script&amp;gt;
+<code class="html">&lt;/code&gt;
+</code></pre>
+<p style="font-size:small">The escaping is needed for introducing text into an HTML page. Use my <a href="http://noteslog.com/personal/projects/postable/" target="_blank">postable</a> page to make it as simple as possible.</p>
+		</td>
+	<tr>
+
+</table>
+
+
+
+<script type="text/javascript"><!--
+google_ad_client = "pub-5209290262083258";
+google_ad_width = 468;
+google_ad_height = 60;
+google_ad_format = "468x60_as";
+google_ad_type = "text_image";
+//2006-12-05: home
+google_ad_channel = "8855023403";
+google_color_border = "EAEAEA";
+google_color_bg = "FFFFFF";
+google_color_link = "D8220C";
+google_color_text = "262626";
+google_color_url = "0066CC";
+//--></script>
+<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
+
+
+
+
+<h3 style="margin-top:60px;">Examples</h3>
+
+<ul>
+	<li style="margin-top:20px;">
+		<a href="chili2.1-example-php-html-css-javascript.html" target="_blank">WordPress: a template page</a> (<a href="chili2.1-example-php-html-css-javascript-n.html" target="_blank">with line numbers</a>) <br />
+		which contains snippets of PHP, JavaScript and CSS into an HTML page
+	</li>
+	<li style="margin-top:20px;">
+		<a href="chili2.1-example-html-css-javascript.html" target="_blank">Yahoo Mail: a login page</a> (<a href="chili2.1-example-html-css-javascript-n.html" target="_blank">with line numbers</a>) <br />
+		which contains lots of CSS snippets, and some JavaScript into an HTML page
+	</li>
+	<li style="margin-top:20px;">
+		<a href="chili2.1-example-geshi1.0.7.22.html" target="_blank">GeSHi 1.0.7.22</a> (<a href="chili2.1-example-geshi1.0.7.22-n.html" target="_blank">with line numbers</a>) <br />
+		a PHP only file
+	</li>
+	<li style="margin-top:20px;">
+		<a href="chili2.1-example-jquery1.2.6.html" target="_blank">jQuery 1.2.6</a> (<a href="chili2.1-example-jquery1.2.6-n.html" target="_blank">with line numbers</a>) <br />
+		a JavaScript only file
+	</li>
+	<li style="margin-top:20px;">
+		<a href="chili2.1-example-bad-php-is-ok.html" target="_blank">Bad (but valid) PHP</a> (<a href="chili2.1-example-bad-php-is-ok-n.html" target="_blank">with line numbers</a>) <br />
+		Chili handles it almost fine, but other highlighters get fooled
+	</li>
+	<li style="margin-top:20px;">
+		<a href="chili2.1-example-other-languages.html" target="_blank">Other Languages</a> (<a href="chili2.1-example-other-languages-n.html" target="_blank">with line numbers</a>) <br />
+		C++, C#, Delphi, Java, LotusScript, MySQL; all using the dynamic and automatic setup
+	</li>
+</ul>
+
+<p style="margin-bottom:60px;"></p>
+
+
+
+
+<script type="text/javascript"><!--
+google_ad_client = "pub-5209290262083258";
+google_ad_width = 468;
+google_ad_height = 60;
+google_ad_format = "468x60_as";
+google_ad_type = "text_image";
+//2006-12-05: home
+google_ad_channel = "8855023403";
+google_color_border = "EAEAEA";
+google_color_bg = "FFFFFF";
+google_color_link = "D8220C";
+google_color_text = "262626";
+google_color_url = "0066CC";
+//--></script>
+<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
+
+
+
+<!--
+<h3 style="margin-top:60px;">Introducing HotChili</h3>
+
+<p>(you need <a href="http://firefox.org/" target="_blank">FireFox</a> and <a href="https://addons.mozilla.org/en-US/firefox/addon/748" target="_blank">GreaseMonkey</a>)</p>
+
+<ul>
+	<li style="margin-top:20px;">
+		<a href="http://userscripts.org/scripts/show/10676" target="_blank">HotChili Install</a> <br />
+		this page let's you install HotChili
+	</li>
+	<li style="margin-top:20px;">
+		<a href="/personal/projects/chili/1.9/examples-hotchili.html" target="_blank">HotChili Screenshots</a> <br />
+		this page shows how to use HotChili to add colors to someone else's page
+	</li>
+</ul>
+-->
+<p style="margin-bottom:60px;"></p>
+
+
+
+
+</body>
+
+</html>
