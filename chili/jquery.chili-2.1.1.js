@@ -468,7 +468,7 @@ $.fn.chili = function( options ) {
 		//but it was not faster nor without sideffects (it was not possible to count spans into el)
 
 		//opera and safari select PRE text correctly 
-		if( ! $.browser.msie || $.browser.mozilla ) {
+		if( $.browser.msie || $.browser.mozilla ) {
 			enableSelectionHelper( el );
 		}
 
