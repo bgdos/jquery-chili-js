@@ -14,7 +14,7 @@ WEBSITE: http://noteslog.com/chili/
 
 ChiliBook = { //implied global
 
-	  version:            "2.1" // 2008-06-29
+	  version:            "2.2" // 2008-07-06
 
 // options --------------------------------------------------------------------
 
@@ -472,7 +472,30 @@ $.fn.chili = function( options ) {
 			enableSelectionHelper( el );
 		}
 
-		if( book.lineNumbers ) {
+		var $that = $el.parent();
+		var classes = $that.attr( 'class' );
+		var ln = /ln-(\d+)-([\w][\w\-]*)|ln-(\d+)|ln-/.exec( classes );
+		if( ln ) {
+			addLineNumbers( el );
+			var start = 0;
+			if( ln[1] ) {
+				start = parseInt( ln[1], 10 );
+				var $pieces = $( '.ln-' + ln[1] + '-' + ln[2] );
+				var pos = $pieces.index( $that[0] );
+				$pieces.slice( 0, pos ).each( function() {
+					start += $( this ).find( 'li' ).length;
+				} );
+			}
+			else if( ln[3] ) {
+				start = parseInt( ln[3], 10 );
+			}
+			else {
+				start = 1;
+			}
+			$el.find( 'ol' )[0].start = start;
+			$('body').width( $('body').width() - 1 ).width( $('body').width() + 1 );
+		}
+		else if( book.lineNumbers ) {
 			addLineNumbers( el );
 		}
 

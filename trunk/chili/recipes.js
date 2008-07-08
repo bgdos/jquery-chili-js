@@ -37,29 +37,49 @@ ChiliBook.recipes[ "php.js" ] =
 				var placeholder = String.fromCharCode(0);
 				var blocks = [];
 				var that = this;
-				var no_php = all.replace( /<\?[^?]*\?+(?:[^>][^?]*\?+)*>|<\?[\w\W]*/g, function( block ) {
-					blocks.push( that.x( block, '/block/php' ) );
+				var no_php_1 = all.replace( /<\?[^?]*\?+(?:[^>][^?]*\?+)*>/g, function( block ) {
+					blocks.push( that.x( block, '/block/php_1' ) );
 					return placeholder;
 				} );
-				var html = this.x( no_php, 'html' );
-				var count = 0;
-				return html.replace( new RegExp( placeholder, "g" ), function() {
-					return blocks[ count++ ];
+				var no_php_2 = no_php_1.replace( /^[^?]*\?+(?:[^>][^?]*\?+)*>|<\?[\w\W]*$/g, function( block ) {
+					blocks.push( that.x( block, '/block/php_2' ) );
+					return placeholder;
 				} );
+				if( blocks.length ) {
+					var html = this.x( no_php_2, 'html' );
+					var count = 0;
+					return html.replace( new RegExp( placeholder, "g" ), function() {
+						return blocks[ count++ ];
+					} );
+				}
+				else {
+					return this.x( all, '/php' );
+				}
 			}
 		}
 	}
 	, block: {
-		  php: {
-			  _match: /(<\?(?:php\b)?)([^?]*\?+(?:[^>][^?]*\?+)*>)|(<\?(?:php\b)?)([\w\W]*)/
-			, _replace: function( all, open, content, open2, content2 ) {
+		  php_1: { // --- <? +++ ?> ---
+			  _match: /(<\?(?:php\b)?)([^?]*\?+(?:[^>][^?]*\?+)*>)/
+			, _replace: function( all, open, content ) {
+				return "<span class='start'>" + this.x( open ) + "</span>"
+					+ this.x( content.replace( /\?>$/, '' ), '/php' ) 
+					+ "<span class='end'>" + this.x( '?>' ) + "</span>";
+			}
+			, _style: {
+					  start: "color: red; font-weight: bold"
+					, end:   "color: red;"
+			}
+		}
+		, php_2: { // +++ ?> --- <? +++
+			  _match: /([^?]*\?+(?:[^>][^?]*\?+)*>)|(<\?(?:php\b)?)([\w\W]*)/
+			, _replace: function( all, content, open2, content2 ) {
 				if( open2 ) {
 					return "<span class='start'>" + this.x( open2 ) + "</span>"
 						+ this.x( content2, '/php' );
 				}
 				else {
-					return "<span class='start'>" + this.x( open ) + "</span>"
-						+ this.x( content.replace( /\?>$/, '' ), '/php' ) 
+					return this.x( content.replace( /\?>$/, '' ), '/php' ) 
 						+ "<span class='end'>" + this.x( '?>' ) + "</span>";
 				}
 			}
