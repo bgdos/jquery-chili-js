@@ -18,12 +18,9 @@ WEBSITE: http://noteslog.com/chili/
  * the trick is not perfect only if the html without php is broken
  * however, in such a case many highlighters get fooled but Chili does not
  * 
- * input: <p class="ex<?php echo $ex ? '"' : 'ample"' ?>>Hi!</p>
- *   (html without php [<p class="ex>Hi!</p>] is broken)
- * 
- * output of GeSHi 1.0.7.21: <span class="sy0">&lt;</span>p <span class="kw2">class</span><span class="sy0">=</span><span class="st0">"ex&lt;?php echo $ex ? '"</span><span class="st0">' : '</span>ample<span class="st0">"' ?&gt;&gt;Hi!&lt;/p&gt;</span>
- * 
- * output of Chili 2.0:      <span class="html__tag_start">&lt;p</span>&nbsp;class="ex<span class="php__start">&lt;?php</span>&nbsp;<span class="php__keyword">echo</span>&nbsp;<span class="php__keyword">$</span><span class="php__variable">ex</span>&nbsp;?&nbsp;<span class="php__string1">'"'</span>&nbsp;:&nbsp;<span class="php__string1">'ample"'</span>&nbsp;<span class="php__end">?&gt;</span><span class="html__tag_start">&gt;</span>Hi!<span class="html__tag_end">&lt;/p&gt;</span>
+ * ---
+ * this recipe has been adapted for working with Safari
+ * in fact, Safari cannot match more than 101236 characters with a lazy star
  * --------------------------------------------------------------------------*/
 {
 	  _name: "php"
@@ -35,30 +32,50 @@ WEBSITE: http://noteslog.com/chili/
 				var placeholder = String.fromCharCode(0);
 				var blocks = [];
 				var that = this;
-				var no_php = all.replace( /<\?[\w\W]*?\?>|<\?[\w\W]*/g, function( block ) {
-					blocks.push( that.x( block, '/block/php' ) );
+				var no_php_1 = all.replace( /<\?[^?]*\?+(?:[^>][^?]*\?+)*>/g, function( block ) {
+					blocks.push( that.x( block, '/block/php_1' ) );
 					return placeholder;
 				} );
-				var html = this.x( no_php, 'html' );
-				var count = 0;
-				return html.replace( new RegExp( placeholder, "g" ), function() {
-					return blocks[ count++ ];
+				var no_php_2 = no_php_1.replace( /^[^?]*\?+(?:[^>][^?]*\?+)*>|<\?[\w\W]*$/g, function( block ) {
+					blocks.push( that.x( block, '/block/php_2' ) );
+					return placeholder;
 				} );
+				if( blocks.length ) {
+					var html = this.x( no_php_2, 'html' );
+					var count = 0;
+					return html.replace( new RegExp( placeholder, "g" ), function() {
+						return blocks[ count++ ];
+					} );
+				}
+				else {
+					return this.x( all, '/php' );
+				}
 			}
 		}
 	}
 	, block: {
-		  php: {
-			  _match: /(<\?(?:php)?)([\w\W]*?)(\?>)|(<\?(?:php)?)([\w\W]*)/ 
-			, _replace: function( all, open, content, close, open2, content2 ) {
+		  php_1: { // --- <? +++ ?> ---
+			  _match: /(<\?(?:php\b)?)([^?]*\?+(?:[^>][^?]*\?+)*>)/
+			, _replace: function( all, open, content ) {
+				return "<span class='start'>" + this.x( open ) + "</span>"
+					+ this.x( content.replace( /\?>$/, '' ), '/php' ) 
+					+ "<span class='end'>" + this.x( '?>' ) + "</span>";
+			}
+			, _style: {
+					  start: "color: red; font-weight: bold"
+					, end:   "color: red;"
+			}
+		}
+		, php_2: { // +++ ?> --- <? +++
+			  _match: /([^?]*\?+(?:[^>][^?]*\?+)*>)|(<\?(?:php\b)?)([\w\W]*)/
+			, _replace: function( all, content, open2, content2 ) {
 				if( open2 ) {
 					return "<span class='start'>" + this.x( open2 ) + "</span>"
 						+ this.x( content2, '/php' );
 				}
 				else {
-					return "<span class='start'>" + this.x( open ) + "</span>"
-						+ this.x( content, '/php' ) 
-						+ "<span class='end'>" + this.x( close ) + "</span>";
+					return this.x( content.replace( /\?>$/, '' ), '/php' ) 
+						+ "<span class='end'>" + this.x( '?>' ) + "</span>";
 				}
 			}
 			, _style: {
